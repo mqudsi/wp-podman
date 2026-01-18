@@ -73,7 +73,11 @@ if [ -z "$(ls -A $WP_PATH/wp-content/)" ]; then
     # cp -a "$WP_PATH"/wp-content.old/* "$WP_PATH"/wp-content/
 
     # Link initial contents (might break git updates?)
-    ln -s "$WP_PATH"/wp-content.old/* "$WP_PATH"/wp-content/
+    mkdir -p "$WP_PATH/wp-content/plugins"
+    mkdir -p "$WP_PATH/wp-content/themes"
+    chown unit:unit "$WP_PATH"/wp-content/*
+    ln -s "$WP_PATH"/wp-content.old/plugins/* "$WP_PATH"/wp-content/plugins/
+    ln -s "$WP_PATH"/wp-content.old/themes/* "$WP_PATH"/wp-content/themes/
 fi
 
 WP_CONFIG="$WP_PATH/wp-content/wp-config.php"
