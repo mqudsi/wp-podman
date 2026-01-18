@@ -66,61 +66,65 @@ fi
 
 # Configure WordPress
 WP_PATH="/var/www/wordpress"
-if [ ! -f "$WP_PATH/wp-config.php" ]; then
+
+if [ -z "$(ls -A $WP_PATH/wp-content/)" ]; then
+    # Copy initial contents (slow!)
+    # echo ">> Persisting wp-content (this may take some time)...
+    # cp -a "$WP_PATH"/wp-content.old/* "$WP_PATH"/wp-content/
+
+    # Link initial contents (might break git updates?)
+    ln -s "$WP_PATH"/wp-content.old/* "$WP_PATH"/wp-content/
+fi
+
+WP_CONFIG="$WP_PATH/wp-content/wp-config.php"
+if [ ! -f "$WP_CONFIG" ]; then
     echo ">> Configuring wp-config.php..."
 
-    if [ -f "$WP_PATH/wp-config-sample.php" ]; then
-        cp "$WP_PATH/wp-config-sample.php" "$WP_PATH/wp-config.php"
+    cp "$WP_PATH/wp-config-sample.php" "$WP_CONFIG"
 
-        # Update db configuration (keeping default host "localhost")
-        sed -i "s/database_name_here/wordpress/" "$WP_PATH/wp-config.php"
-        sed -i "s/username_here/wp_user/" "$WP_PATH/wp-config.php"
-        sed -i "s/password_here/wp_secure_pass/" "$WP_PATH/wp-config.php"
-        COLLATE="utf8mb4_unicode_520_ci";
-        sed -i "s/\(define(\s*['\"]DB_COLLATE['\"]\s*,\s*['\"]\)\(['\"]\s*);\)/\1$COLLATE\2/" "$WP_PATH/wp-config.php"
+    # Update db configuration (keeping default host "localhost")
+    sed -i "s/database_name_here/wordpress/" "$WP_CONFIG"
+    sed -i "s/username_here/wp_user/" "$WP_CONFIG"
+    sed -i "s/password_here/wp_secure_pass/" "$WP_CONFIG"
+    COLLATE="utf8mb4_unicode_520_ci";
+    sed -i "s/\(define(\s*['\"]DB_COLLATE['\"]\s*,\s*['\"]\)\(['\"]\s*);\)/\1$COLLATE\2/" "$WP_CONFIG"
 
-        # Set secure keys
-        php -r '
-            $config_file = "'$WP_PATH/'wp-config.php";
-            $config_content = file_get_contents($config_file);
-            $keys = [
-                "AUTH_KEY", "SECURE_AUTH_KEY", "LOGGED_IN_KEY", "NONCE_KEY",
-                "AUTH_SALT", "SECURE_AUTH_SALT", "LOGGED_IN_SALT", "NONCE_SALT"
-            ];
+    # Set secure keys
+    php -r '
+        $config_file = "'$WP_CONFIG'";
+        $config_content = file_get_contents($config_file);
+        $keys = [
+            "AUTH_KEY", "SECURE_AUTH_KEY", "LOGGED_IN_KEY", "NONCE_KEY",
+            "AUTH_SALT", "SECURE_AUTH_SALT", "LOGGED_IN_SALT", "NONCE_SALT"
+        ];
 
-            foreach ($keys as $key) {
-                // Generate 64 chars of random hex
-                $random_val = bin2hex(random_bytes(32));
-                $new_line = "define( \047$key\047, \047$random_val\047 );";
+        foreach ($keys as $key) {
+            // Generate 64 chars of random hex
+            $random_val = bin2hex(random_bytes(32));
+            $new_line = "define( \047$key\047, \047$random_val\047 );";
 
-                // Update the define() in wp-config.php
-                $config_content = preg_replace("/define\(\s*([\047\042])$key\\1,.*?\);/", $new_line, $config_content);
-            }
+            // Update the define() in wp-config.php
+            $config_content = preg_replace("/define\(\s*([\047\042])$key\\1,.*?\);/", $new_line, $config_content);
+        }
 
-            file_put_contents($config_file, $config_content);
-        '
+        file_put_contents($config_file, $config_content);
+    '
 
-        # Set some default configuration options
-        echo "define( 'DISALLOW_FILE_EDIT', true );" >> "$WP_PATH/wp-config.php"
+    # Set some default configuration options
+    echo "define( 'DISALLOW_FILE_EDIT', true );" >> "$WP_CONFIG"
 
-        # Dynamically set WP_HOME and WP_SITEURL for debugging
-        sed -i "2i \\
+    # Dynamically set WP_HOME and WP_SITEURL for debugging
+    sed -i "2i \\
 if (isset(\$_SERVER['HTTP_HOST'])) { \\
 \$proto = (isset(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] === 'on') ? 'https' : 'http'; \\
 define('WP_HOME', \$proto . '://' . \$_SERVER['HTTP_HOST']); \\
 define('WP_SITEURL', \$proto . '://' . \$_SERVER['HTTP_HOST']); \\
-}" "$WP_PATH/wp-config.php"
-    fi
+}" "$WP_CONFIG"
+fi
+if [ ! -s "$WP_PATH/wp-config.php" ]; then
+    ln -s "$WP_CONFIG" "$WP_PATH/wp-config.php"
 fi
 
-if [ -z "$(ls -A /var/www/wordpress/wp-content/)" ]; then
-    # Copy initial contents (slow!)
-    # echo ">> Persisting wp-content (this may take some time)...
-    # cp -a /var/www/wordpress/wp-content.old/* /var/www/wordpress/wp-content/
-
-    # Link initial contents (might break git updates?)
-    ln -s /var/www/wordpress/wp-content.old/* /var/www/wordpress/wp-content/
-fi
 mkdir -p /var/www/wordpress/wp-content/plugins /var/www/wordpress/wp-content/themes
 chmod u+rw /var/www/wordpress/wp-content/plugins /var/www/wordpress/wp-content/themes
 
