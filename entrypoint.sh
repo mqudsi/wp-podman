@@ -79,6 +79,27 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
         COLLATE="utf8mb4_unicode_520_ci";
         sed -i "s/\(define(\s*['\"]DB_COLLATE['\"]\s*,\s*['\"]\)\(['\"]\s*);\)/\1$COLLATE\2/" "$WP_PATH/wp-config.php"
 
+        # Set secure keys
+        php -r '
+            $config_file = "'$WP_PATH/'wp-config.php";
+            $config_content = file_get_contents($config_file);
+            $keys = [
+                "AUTH_KEY", "SECURE_AUTH_KEY", "LOGGED_IN_KEY", "NONCE_KEY",
+                "AUTH_SALT", "SECURE_AUTH_SALT", "LOGGED_IN_SALT", "NONCE_SALT"
+            ];
+
+            foreach ($keys as $key) {
+                // Generate 64 chars of random hex
+                $random_val = bin2hex(random_bytes(32));
+                $new_line = "define( \047$key\047, \047$random_val\047 );";
+
+                // Update the define() in wp-config.php
+                $config_content = preg_replace("/define\(\s*([\047\042])$key\\1,.*?\);/", $new_line, $config_content);
+            }
+
+            file_put_contents($config_file, $config_content);
+        '
+
         # Set some default configuration options
         echo "define( 'DISALLOW_FILE_EDIT', true );" >> "$WP_PATH/wp-config.php"
 
