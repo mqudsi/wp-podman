@@ -33,8 +33,9 @@ cleanup() {
 trap cleanup TERM INT
 
 # Init MariaDB
-echo ">> Initializing MariaDB..."
 if [ ! -d "/var/lib/mysql/mysql" ]; then
+    echo ">> Initializing MariaDB..."
+
     mkdir -p /run/mysqld
     chown mysql:mysql /run/mysqld
 
@@ -67,6 +68,7 @@ fi
 WP_PATH="/var/www/wordpress"
 if [ ! -f "$WP_PATH/wp-config.php" ]; then
     echo ">> Configuring wp-config.php..."
+
     if [ -f "$WP_PATH/wp-config-sample.php" ]; then
         cp "$WP_PATH/wp-config-sample.php" "$WP_PATH/wp-config.php"
 
@@ -113,7 +115,7 @@ while [ ! -S /var/run/control.unit.sock ]; do
 done
 
 # PUT Unit config
-curl -X PUT --data-binary @/config.json --unix-socket /var/run/control.unit.sock http://localhost/config > /dev/null
+curl -Ss -X PUT --data-binary @/config.json --unix-socket /var/run/control.unit.sock http://localhost/config > /dev/null
 
 echo ">> Container Ready. WordPress is running (PID: $UNIT_PID)."
 

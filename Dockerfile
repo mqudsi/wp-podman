@@ -41,9 +41,9 @@ WORKDIR /var/www
 RUN git clone --depth 1 https://github.com/WordPress/WordPress.git wordpress
 
 # Setup directories and permissions
-RUN mkdir -p /var/lib/unit /run/unit /run/mysqld \
+RUN mkdir -p /var/lib/unit /run/unit /run/mysqld /var/lib/mysql \
     && chown unit:unit /var/lib/unit /run/unit \
-    && chown mysql:mysql /run/mysqld
+    && chown mysql:mysql /run/mysqld /var/lib/mysql
 
 RUN touch /var/log/php.log \
     && chown unit:unit /var/log/php.log
