@@ -157,6 +157,14 @@ done
 # PUT Unit config
 curl -Ss -X PUT --data-binary @/config.json --unix-socket /var/run/control.unit.sock http://localhost/config > /dev/null
 
+echo ">> Waiting for MariaDB to start..."
+for i in $(seq 1 20); do
+    if mariadb-admin ping --silent; then
+        break
+    fi
+    sleep 0.5
+done
+
 echo ">> Container Ready. WordPress is running (PID: $UNIT_PID)."
 
 # Block here to prevent container exit.
