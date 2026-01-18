@@ -129,8 +129,9 @@ if [ ! -s "$WP_PATH/wp-config.php" ]; then
     ln -s "$WP_CONFIG" "$WP_PATH/wp-config.php"
 fi
 
-mkdir -p /var/www/wordpress/wp-content/plugins /var/www/wordpress/wp-content/themes
-chmod u+rw /var/www/wordpress/wp-content/plugins /var/www/wordpress/wp-content/themes
+mkdir -p $(printf "$WP_PATH/wp-content/%s\n" plugins themes uploads)
+chmod ug+rw $(printf "$WP_PATH/wp-content/%s\n" plugins themes uploads)
+chown unit:unit $(printf "$WP_PATH/wp-content/%s\n" plugins themes uploads)
 
 # Start MariaDB in the background
 echo ">> Starting MariaDB..."
