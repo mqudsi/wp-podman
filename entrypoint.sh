@@ -113,9 +113,15 @@ define('WP_SITEURL', \$proto . '://' . \$_SERVER['HTTP_HOST']); \\
     fi
 fi
 
-# Ensure needed permissions
+if [ -z "$(ls -A /var/www/wordpress/wp-content/)" ]; then
+    # Copy initial contents (slow!)
+    # echo ">> Persisting wp-content (this may take some time)...
+    # cp -a /var/www/wordpress/wp-content.old/* /var/www/wordpress/wp-content/
+
+    # Link initial contents (might break git updates?)
+    ln -s /var/www/wordpress/wp-content.old/* /var/www/wordpress/wp-content/
+fi
 mkdir -p /var/www/wordpress/wp-content/plugins /var/www/wordpress/wp-content/themes
-chown -R unit:unit /var/www/wordpress
 chmod u+rw /var/www/wordpress/wp-content/plugins /var/www/wordpress/wp-content/themes
 
 # Start MariaDB in the background

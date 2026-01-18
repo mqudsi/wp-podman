@@ -40,6 +40,11 @@ RUN getent group unit || addgroup -S unit && \
 WORKDIR /var/www
 RUN git clone --depth 1 https://github.com/WordPress/WordPress.git wordpress
 
+# We use a host directory to persist wp-content/ so we need to move its existing contents
+RUN mv /var/www/wordpress/wp-content /var/www/wordpress/wp-content.old
+RUN mkdir /var/www/wordpress/wp-content
+RUN chown -R unit:unit /var/www/wordpress
+
 # Setup directories and permissions
 RUN mkdir -p /var/lib/unit /run/unit /run/mysqld /var/lib/mysql \
     && chown unit:unit /var/lib/unit /run/unit \
