@@ -76,6 +76,8 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
         sed -i "s/database_name_here/wordpress/" "$WP_PATH/wp-config.php"
         sed -i "s/username_here/wp_user/" "$WP_PATH/wp-config.php"
         sed -i "s/password_here/wp_secure_pass/" "$WP_PATH/wp-config.php"
+        COLLATE="utf8mb4_unicode_520_ci";
+        sed -i "s/\(define(\s*['\"]DB_COLLATE['\"]\s*,\s*['\"]\)\(['\"]\s*);\)/\1$COLLATE\2/" "$WP_PATH/wp-config.php"
 
         # Set some default configuration options
         echo "define( 'DISALLOW_FILE_EDIT', true );" >> "$WP_PATH/wp-config.php"
