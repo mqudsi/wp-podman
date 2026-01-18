@@ -1,0 +1,60 @@
+{
+    "listeners": {
+        "*:80": {
+            "pass": "routes"
+        }
+    },
+    "routes": [
+        {
+            "match": {
+                "uri": [
+                    "*.php",
+                    "*.php/*",
+                    "/wp-admin/"
+                ]
+            },
+            "action": {
+                "pass": "applications/wordpress/direct"
+            }
+        },
+        {
+            "action": {
+                "share": "/var/www/wordpress$uri",
+                "fallback": {
+                    "pass": "applications/wordpress/index"
+                }
+            }
+        }
+    ],
+    "applications": {
+        "wordpress": {
+            "type": "php",
+            "targets": {
+                "direct": {
+                    "root": "/var/www/wordpress"
+                },
+                "index": {
+                    "root": "/var/www/wordpress",
+                    "script": "index.php"
+                }
+            },
+            // "root": "/var/www/wordpress",
+            // "script": "index.php",
+            "user": "unit",
+            "group": "unit",
+            "options": {
+              "user": {
+                "log_errors": "1",
+                // "error_reporting": "E_ALL & ~E_DEPRECATED",
+                // Can be obtained via `php -r 'echo E_ALL & ~E_DEPRECATED;'`
+                // "error_reporting": "10241",
+                // "error_reporting": "E_ALL",
+                "error_reporting": "32767",
+                "error_log": "/var/log/php.log",
+                "display_startup_errors": "0",
+                "display_errors": "0"
+              }
+            }
+        }
+    }
+}
