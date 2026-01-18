@@ -91,7 +91,9 @@ define('WP_SITEURL', \$proto . '://' . \$_SERVER['HTTP_HOST']); \\
 fi
 
 # Ensure needed permissions
+mkdir -p /var/www/wordpress/wp-content/plugins /var/www/wordpress/wp-content/themes
 chown -R unit:unit /var/www/wordpress
+chmod u+rw /var/www/wordpress/wp-content/plugins /var/www/wordpress/wp-content/themes
 
 # Start MariaDB in the background
 echo ">> Starting MariaDB..."
